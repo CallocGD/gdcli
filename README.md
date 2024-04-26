@@ -1,5 +1,6 @@
 # Geometry Dash Commandline 
 A Small and Simple Commandline made in Rust for doing things geometry dash related things.
+This is the first application I've ever made in rust
 
 ## Features
 - Compatability on all comming platforms including Mac, Linux and Windows Devices, (No Common Device should be left out)
