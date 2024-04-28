@@ -1,15 +1,16 @@
-
 pub mod user;
 pub mod level;
 pub mod parser;
 pub mod gdenums;
+pub mod levelcomment;
 
 use std::collections::HashMap;
 use std::fmt;
 use std::process::exit;
-
 use self::user::User;
 use self::level::Level;
+use self::levelcomment::LevelComment;
+
 
 
 pub struct GDClient{
@@ -69,6 +70,19 @@ impl GDClient {
         return self.post("/database/downloadGJLevel22.php", fields).await;
     }
 
+    pub (crate) async fn download_level_comments(&self, level_id:u64, page:u32, count:Option<u8>) -> Result<reqwest::Response, reqwest::Error>{
+        let mut fields: HashMap<&str, String> =  HashMap::new();
+        fields.insert("secret", "Wmfd2893gb7".to_string());
+        fields.insert("levelID", level_id.to_string());
+        fields.insert("page", page.to_string());
+        
+        if count.is_some(){
+            fields.insert("count", count.unwrap().to_string());
+        }
+
+        return self.post("/database/getGJComments21.php", fields).await;
+    }
+
 }
 
 
@@ -111,7 +125,24 @@ pub async fn get_level(id:i64, connection_timeout:Option<u64>, proxy:&Option<Str
     return Level::new(text); 
 }
 
+pub async fn get_level_comments(id:i64,  page:u32 , connection_timeout:Option<u64>, proxy:&Option<String>) -> Vec<LevelComment> {
+    let client = create_client(Some("http://www.boomlings.com"), connection_timeout, proxy);
+    let level_data = client.download_level(id).await.unwrap().error_for_status().unwrap().text().await.unwrap();
+    if level_data == "-1"{
+        println!("Level Requested does not exist");
+        exit(-1);
+    }
 
+    let level = Level::new(level_data);
+    let data = client.download_level_comments(level.id, page, Some(20)).await.unwrap().error_for_status().unwrap().text().await.unwrap();
+    if data.starts_with("-"){
+        println!("No Level Comments Were Found, Exiting...");
+        exit(-1);
+    }
+    /* Remove the page-sum from the results... */
+    let d:Vec<&str> = data.split("#").collect();
+    return d[0].split("|").map(|x| LevelComment::new(x.to_string())).collect();
+}
 
 
 

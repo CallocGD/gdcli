@@ -12,7 +12,7 @@ use super::gdenums::{IconType, CommentHistoryState, Authority};
 
 
 #[derive(Builder)]
-pub struct User{
+pub struct User {
     pub name:String,
     pub player_id:u64,
     pub stars:u64,
@@ -116,6 +116,7 @@ impl User {
 
 
     pub (crate) fn report_info(&self) {
+        /* TODO: Redo this shit... */
         println!("=================== USER INFO =========================================");
         println!("[Username]: {}", self.name);
         println!("[AccountID]: {}", self.account_id);
